@@ -11,7 +11,7 @@ connectDB();
 const app = express();
 
 
-// APT Routes
+// API Routes
 app.use("/auth", authRoutes)
 
 

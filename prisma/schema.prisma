@@ -4,10 +4,95 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  role UserRole
+
+  createdAt DateTime @default(now())
+
+  //Relations
+  teamsCreated Teams[] @relation("TeamCreator")
+  leaguesCreated League[] @relation("LeagueCreator")
+  matchesCreated Match[] @relation("MatchCreator")
+}
+
+model Teams {
+  id String @id @default(uuid())
+  name String
+  city String 
+  logo String?
+
+  createdBy String
+  createdAt DateTime @default(now())
+  //Relations
+  creator User @relation("TeamCreator",fields: [createdBy], references: [id])
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+
+}
+
+model League {
+  id String @id @default(uuid())
+  name String 
+  season String
+
+  createdBy String
+  createdAt DateTime @default(now())
+
+  //Relations
+  creator User @relation("LeagueCreator",fields: [createdBy], references: [id])
+}
+
+model Match {
+  id String @id @default(uuid())
+  homeTeamId String 
+  awayTeamId String 
+  homeScore Int?
+  awayScore Int?
+  status MatchStatus
+  matchDate DateTime
+
+  createdBy String
+  createdAt DateTime @default(now())
+
+  //Relations
+  creator User @relation("MatchCreator",fields: [createdBy], references: [id])
+  homeTeam Teams @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam Teams @relation("AwayTeam",fields: [awayTeamId], references: [id])
+}
+
+model PlayerStatistic {
+  id String @id @default(uuid())
+  name String
+  goals Int
+  assists Int
+
+    createdAt DateTime @default(now())
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+enum UserRole {
+  ADMIN
+  ORGANISER
+  COACH
+  PLAYER
+}
+// USER(Coach) -> TEAMS ->
