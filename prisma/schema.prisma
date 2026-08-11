@@ -22,6 +22,8 @@ model User {
   createdAt DateTime @default(now())
 
   //Relations
+  memberships TeamMember[]
+  stats PlayerStatistic[]
   teamsCreated Teams[] @relation("TeamCreator")
   leaguesCreated League[] @relation("LeagueCreator")
   matchesCreated Match[] @relation("MatchCreator")
@@ -37,6 +39,7 @@ model Teams {
   createdAt DateTime @default(now())
   //Relations
   creator User @relation("TeamCreator",fields: [createdBy], references: [id])
+  members TeamMember[]
   homeMatches Match[] @relation("HomeTeam")
   awayMatches Match[] @relation("AwayTeam")
 
@@ -72,13 +75,32 @@ model Match {
   awayTeam Teams @relation("AwayTeam",fields: [awayTeamId], references: [id])
 }
 
+model TeamMember {
+  id String @id @default(uuid())
+
+  userId String
+  teamId String
+
+  playerPosition Position
+  jerseyNumber Int
+  captain Boolean @default(false)
+  viceCaptain Boolean @default(false)
+
+  joinedDate DateTime @default(now())
+
+  //Relations
+  user User @relation(fields: [userId], references: [id])
+  team Teams @relation(fields: [teamId], references: [id])
+}
+
 model PlayerStatistic {
   id String @id @default(uuid())
-  name String
-  goals Int
-  assists Int
+  playerId String
+  goals Int @default(0)
+  assists Int @default(0)
 
     createdAt DateTime @default(now())
+    player User @relation(fields: [playerId], references: [id])
 }
 
 enum MatchStatus {
@@ -94,5 +116,29 @@ enum UserRole {
   ORGANISER
   COACH
   PLAYER
+}
+
+enum Position {
+  GK
+
+  RB
+  RWB
+  
+  CB
+  LCB
+  RCB
+
+  LB
+  LWB
+
+  CDM
+  CM
+  CAM
+
+  RW
+  LW
+
+  CF
+  ST
 }
 // USER(Coach) -> TEAMS ->

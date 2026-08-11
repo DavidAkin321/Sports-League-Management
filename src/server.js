@@ -4,6 +4,8 @@ import {connectDB, disconnectDB} from './config/db.js'
 
 //Import Routes
 import authRoutes from "./routes/authRoutes.js";
+import teamRoutes from "./routes/teamRoutes.js";
+
 
 config();
 connectDB();
@@ -19,6 +21,7 @@ app.use(express.urlencoded({extended:true}));
 
 // API Routes
 app.use("/auth", authRoutes)
+app.use("/team", teamRoutes)
 
 
 const PORT = 5001;
