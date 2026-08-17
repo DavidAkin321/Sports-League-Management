@@ -78,7 +78,7 @@ model Match {
 model TeamMember {
   id String @id @default(uuid())
 
-  userId String
+  userId String @unique
   teamId String
 
   playerPosition Position
