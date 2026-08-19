@@ -1,6 +1,32 @@
 import { prisma } from "../config/db.js";
 
-//Create Team to be created 
+//Create Team 
+const createTeam = async (req, res) => {
+    try {
+        const { name, city, logo} = req.body;
+
+        const team = await prisma.teams.create({
+            data: {
+                name,
+                city,
+                logo,
+                createdBy: req.user.id,
+            },
+        });
+
+        return res.status(201).json({
+            status:"success",
+            message:"Team created sucessfully",
+            data: team,
+        });
+    } catch (error){
+        console.error(error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+};
 
 const addPlayerToTeam = async (req, res) => {
     try{
@@ -87,6 +113,55 @@ const addPlayerToTeam = async (req, res) => {
 }
 };
 
+//Get Team players
+const getTeamPlayers = async (req, res) => {
+    try{
+        const { teamId } = req.params;
+
+        //Check that the team exists
+        const team = await prisma.teams.findUnique({
+            where: {
+                id: teamId,
+            },
+        });
+        if (!team) {
+            return res.status(404).json({
+                error:"Team not found",
+            });
+        }
+        //Find all players belonging to the team
+        const players = await prisma.teamMember.findMany({
+            where: {
+                teamId: teamId,
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+        });
+
+        return res.status(200).json({
+            status: "success",
+            data: {
+                team:team,
+                players:players,
+            },
+        });
+
+    } catch (error){
+        console.error(error);
+
+        return res.status(500).json({
+            error:"Internal server error",
+        });
+    }
+    };
+
 const removeFromTeam = async (req, res) => {
     try {
     //Find the team membership
@@ -112,6 +187,10 @@ const removeFromTeam = async (req, res) => {
             error: "Team not found",
         });
     }
+
+    console.log("Team created by:", team.createdBy);
+    console.log("Logged in user:", req.user.id);
+    console.log("Logged in role:", req.user.role);
 
     //Only the team creator/coach or an admin can remove players
     if (
@@ -143,4 +222,60 @@ const removeFromTeam = async (req, res) => {
 
 };
 
-export {addPlayerToTeam, removeFromTeam};
+//Update Team
+ const updateTeam = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+        const { name, city, logo} = req.body;
+
+        //Check that the team exists
+        const team = await prisma.teams.findUnique({
+            where: {
+                id:teamId,
+            },
+        });
+
+        if(!team) {
+            return res.status(404).json({
+                error:"Team not found",
+            });
+        }
+
+        //Check if user is team creator or admin 
+        if (
+            team.createdBy !== req.user.id &&
+            req.user.role !== "ADMIN"
+        ) {
+            return res.status(403).json({
+                error: "Not allowed to perform this action",
+            });
+        }
+
+        //Update the team 
+        const updatedTeam = await prisma.teams.update({
+            where: {
+                id: teamId,
+            },
+            data: {
+                name,
+                city,
+                logo,
+            },
+        });
+
+        return res.status(200).json({
+            status: "success",
+            message: "Team updated successfully",
+            data: updatedTeam
+        });
+    } catch (error){
+        console.error(error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+
+ };
+
+export {createTeam, addPlayerToTeam, removeFromTeam, getTeamPlayers, updateTeam};

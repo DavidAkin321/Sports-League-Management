@@ -1,5 +1,5 @@
 import express from 'express'; 
-import {addPlayerToTeam, removeFromTeam} from '../controllers/teamController.js';
+import {addPlayerToTeam, createTeam, getTeamPlayers, removeFromTeam, updateTeam} from '../controllers/teamController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { coachOrAdmin } from '../middleware/roleMiddleware.js';
 
@@ -14,6 +14,11 @@ router.post(
     addPlayerToTeam
 );
 
+router.post(
+    "/",
+    coachOrAdmin,
+    createTeam
+)
 
 router.delete(
     "/players/:id",
@@ -21,6 +26,18 @@ router.delete(
     coachOrAdmin,
     removeFromTeam
 );
+
+router.get(
+    "/:teamId/players",
+    getTeamPlayers
+);
+
+
+router.patch(
+    "/:teamId",
+    coachOrAdmin,
+    updateTeam
+)
 
 //router.post("/login", login);
 
