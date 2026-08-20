@@ -25,14 +25,14 @@ app.use("/team", teamRoutes)
 
 
 const PORT = 5001;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
 
 //Handle unhandled promise rejections (e.g / database connection errors)
 process.on("unhandledRejection", (err) => {
     console.error("unhandled Rejection:", err);
-    ServiceWorkerRegistration.close(async () => {
+    server.close(async () => {
         await disconnectDB();
         process.exit(1);
     });
@@ -48,7 +48,7 @@ process.on("uncaughtException", async (err) => {
 //Graceful shutdown
 process.on("SIGTERM", async () => {
     console.log("SIGTERM recieved, shutting down gracefully");
-    ServiceWorkerRegistration.close(async () => {
+    server.close(async () => {
         await disconnectDB();
         process.exit(0);
     });

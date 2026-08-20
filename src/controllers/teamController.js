@@ -257,9 +257,9 @@ const removeFromTeam = async (req, res) => {
                 id: teamId,
             },
             data: {
-                name,
-                city,
-                logo,
+                ...(name !== undefined && { name }),
+                ...(city !== undefined && { name }),
+                ...(logo !== undefined && { name }),              
             },
         });
 
@@ -278,4 +278,56 @@ const removeFromTeam = async (req, res) => {
 
  };
 
-export {createTeam, addPlayerToTeam, removeFromTeam, getTeamPlayers, updateTeam};
+ const deleteTeam = async (req, res) => {
+    try {
+        const { teamId } = req.params;
+
+        //Check tht the team exists
+        const team = await prisma.teams.findUnique({
+            where: {
+                id: teamId,
+            },
+        });
+        if (!team) {
+            return res.status(404).json({
+                error: "Team not found",
+            });
+        }
+
+        //Only team creator or admin can delete the team 
+        if (
+            team.createdBy !== req.user.id &&
+            req.user.role !== "ADMIN"
+        ) {
+            return res.status(403).json({
+                error: "Not allowed to perform this action",
+            });
+        }
+
+        //Delete the team
+        await prisma.teams.delete({
+            where: {
+                id: teamId,
+            },
+        });
+
+        return res.status(200).json({
+            status: "success",
+            message: "Team deleted succesfully",
+        });
+    } catch (error){
+        console.error(error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+ };
+export {
+          createTeam, 
+          addPlayerToTeam, 
+          removeFromTeam, 
+          getTeamPlayers, 
+          updateTeam, 
+          deleteTeam 
+        };
