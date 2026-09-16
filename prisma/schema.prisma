@@ -42,6 +42,8 @@ model Teams {
   members TeamMember[]
   homeMatches Match[] @relation("HomeTeam")
   awayMatches Match[] @relation("AwayTeam")
+  //League relationship
+  leagueTeams LeagueTeam[]
 
 }
 
@@ -55,6 +57,21 @@ model League {
 
   //Relations
   creator User @relation("LeagueCreator",fields: [createdBy], references: [id])
+  leagueTeams LeagueTeam[]
+}
+
+model LeagueTeam {
+  id String @id @default(uuid())
+
+  leagueId String
+  teamId String
+
+  //Relations
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  team Teams @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  //Prevent same team being added to the league twice
+  @@unique([leagueId, teamId])
 }
 
 model Match {
