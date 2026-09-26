@@ -58,6 +58,8 @@ model League {
   //Relations
   creator User @relation("LeagueCreator",fields: [createdBy], references: [id])
   leagueTeams LeagueTeam[]
+  matches Match[]
+  settings LeagueSettings?
 }
 
 model LeagueTeam {
@@ -74,19 +76,46 @@ model LeagueTeam {
   @@unique([leagueId, teamId])
 }
 
+model LeagueSettings {
+  id String @id @default(uuid())
+
+  leagueId String @unique
+
+  tournamentDate DateTime
+  startTime String
+  endTime String
+
+  matchDuration Int
+  breakDuration Int
+
+  surfaces Int
+
+  league League @relation( fields: [leagueId], references: [id], onDelete: Cascade)
+
+}
+
 model Match {
   id String @id @default(uuid())
+
+  leagueId String
+ 
   homeTeamId String 
   awayTeamId String 
+ 
   homeScore Int?
   awayScore Int?
+
   status MatchStatus
+  stage MatchStage
+  round Int
+
   matchDate DateTime
 
   createdBy String
   createdAt DateTime @default(now())
 
   //Relations
+  league League @relation(fields: [leagueId], references: [id],onDelete: Cascade)
   creator User @relation("MatchCreator",fields: [createdBy], references: [id])
   homeTeam Teams @relation("HomeTeam", fields: [homeTeamId], references: [id])
   awayTeam Teams @relation("AwayTeam",fields: [awayTeamId], references: [id])
@@ -157,5 +186,12 @@ enum Position {
 
   CF
   ST
+}
+
+enum MatchStage {
+  GROUP
+  QUATER_FINAL
+  SEMI_FINAL
+  FINAL
 }
 // USER(Coach) -> TEAMS ->

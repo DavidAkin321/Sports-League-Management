@@ -282,7 +282,7 @@ const removeFromTeam = async (req, res) => {
     try {
         const { teamId } = req.params;
 
-        //Check tht the team exists
+        //Check that the team exists
         const team = await prisma.teams.findUnique({
             where: {
                 id: teamId,
