@@ -15,6 +15,9 @@ const createLeagueSettings = async (req, res) => {
             surfaces
         } = req.body;
 
+        console.log("TOURNAMENT DATE:", tournamentDate);
+        console.log("TYPE:", typeof tournamentDate);
+
         //Check that league exists
         const league = await prisma.league.findUnique({
             where: {

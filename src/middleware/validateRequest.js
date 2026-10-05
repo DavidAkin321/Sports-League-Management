@@ -1,21 +1,16 @@
-export const validateRequest = (schema) => {
-    return(req, res, next) => {
-        const result = schema.safeParse(req.body);
+const validateRequest = (schema) => (req, res, next) => {
+  const result = schema.safeParse(req.body);
 
-        if(!result.success) {
-            const formatted = result.error.format();
+  if (!result.success) {
+    return res.status(400).json({
+      error: "Validation failed",
+      details: result.error.issues,
+    });
+  }
 
-            const flatErrors = Object.values(formatted)
-            .flat()
-            .filter(Boolean)
-            .map((err) => err._errors)
-            .flat();
+  req.body = result.data;
 
-
-            return res.status(400).json({ message: flatErrors.join(", ") });
-
-        }
-
-        next()
-    };
+  next();
 };
+
+export { validateRequest };

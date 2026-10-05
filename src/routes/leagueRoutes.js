@@ -6,6 +6,7 @@ import { coachOrAdmin, organiserOrAdmin } from '../middleware/roleMiddleware.js'
 import { validateRequest } from "../middleware/validateRequest.js";
 import { leagueSettingsSchema } from '../validators/leagueSettingsValidators.js';
 import { createLeagueSchema, addTeamToLeagueSchema, updateLeagueSchema } from "../validators/leagueValidators.js";
+import { generateSchedule } from "../controllers/scheduleController.js";
 
 const router = express.Router();
 
@@ -53,5 +54,11 @@ router.post(
     organiserOrAdmin,
     createLeagueSettings
 )
+
+router.post(
+    "/:leagueId/schedule",
+    organiserOrAdmin,
+    generateSchedule
+);
 
 export default router;
