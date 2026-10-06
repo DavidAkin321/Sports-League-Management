@@ -5,6 +5,7 @@ import { prisma } from "../config/db.js";
 //Check if token is valid
 export const authMiddleware = async (req, res, next) => {
     console.log("authMiddleware reached");
+     console.log("JWT SECRET EXISTS:", !!process.env.JWT_SECRET);
     let token;
 
 
@@ -37,5 +38,6 @@ export const authMiddleware = async (req, res, next) => {
     }catch (err) {
         return res.status(401).json({ error: "Not authorised, token failed"});
     }
+
 
 };

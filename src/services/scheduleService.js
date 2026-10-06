@@ -263,7 +263,7 @@ const validateSchedule = (scheduledMatches) => {
     }
 
     //Check for surface conflicts
-    for (let i = 0; 1 < scheduledMatches.length; i++){
+    for (let i = 0; i < scheduledMatches.length; i++){
         for (let j = i + 1; j < scheduledMatches.length; j++) {
             const matchA = scheduledMatches[i];
             const matchB = scheduledMatches[j];

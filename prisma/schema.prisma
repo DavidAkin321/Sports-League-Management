@@ -96,9 +96,7 @@ model LeagueSettings {
 
 model Match {
   id String @id @default(uuid())
-
   leagueId String
- 
   homeTeamId String 
   awayTeamId String 
  
@@ -108,8 +106,9 @@ model Match {
   status MatchStatus
   stage MatchStage
   round Int
-
   matchDate DateTime
+
+  surface Int
 
   createdBy String
   createdAt DateTime @default(now())

@@ -42,12 +42,13 @@ const scheduledTournament = scheduleTournament(
 );
 
 console.log("SCHEDULED TOURNAMENT:");
-console.log(
-  JSON.stringify(scheduledTournament, null, 2)
-);
+console.log(JSON.stringify(scheduledTournament, null, 2));
 
-const validationResult =
-  validateSchedule(scheduledTournament);
+console.log("ABOUT TO VALIDATE");
+
+const validationResult = validateSchedule(scheduledTournament);
+
+console.log("VALIDATION FINISHED");
 
 console.log("VALIDATION RESULT:");
 console.log(validationResult);
