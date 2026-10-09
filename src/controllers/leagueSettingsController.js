@@ -39,6 +39,7 @@ const createLeagueSettings = async (req, res) => {
                 error: "You are not allowed to configure this league",
             });
         }  
+        
         const existingSetting = await prisma.leagueSettings.findUnique({
             where: { leagueId },
         });

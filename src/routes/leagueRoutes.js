@@ -7,6 +7,8 @@ import { validateRequest } from "../middleware/validateRequest.js";
 import { leagueSettingsSchema } from '../validators/leagueSettingsValidators.js';
 import { createLeagueSchema, addTeamToLeagueSchema, updateLeagueSchema } from "../validators/leagueValidators.js";
 import { generateSchedule } from "../controllers/scheduleController.js";
+import { updateMatchScore } from '../controllers/updateMatchScoreController.js';
+import { scoreSchema } from '../validators/scoreValidator.js';
 
 const router = express.Router();
 
@@ -59,6 +61,13 @@ router.post(
     "/:leagueId/schedule",
     organiserOrAdmin,
     generateSchedule
+);
+
+router.patch(
+    "/:leagueId/matches/:matchId/score",
+    validateRequest(scoreSchema),
+    organiserOrAdmin,
+    updateMatchScore
 );
 
 export default router;
