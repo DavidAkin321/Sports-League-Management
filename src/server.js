@@ -6,7 +6,7 @@ import {connectDB, disconnectDB} from './config/db.js'
 import authRoutes from "./routes/authRoutes.js";
 import teamRoutes from "./routes/teamRoutes.js";
 import leagueRoutes from "./routes/leagueRoutes.js";
-
+import knockoutRoutes from "./routes/knockoutRoutes.js"
 
 config();
 connectDB();
@@ -24,6 +24,7 @@ app.use(express.urlencoded({extended:true}));
 app.use("/auth", authRoutes)
 app.use("/team", teamRoutes)
 app.use("/league", leagueRoutes)
+app.use("knockout", knockoutRoutes)
 
 
 const PORT = 5001;

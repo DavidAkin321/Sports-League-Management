@@ -300,5 +300,132 @@ const updateLeague = async (req, res) => {
 
     };
 
+    const getLeagueStandings = async (req, res) => {
+        try {
+            const {leagueId} = req.params;
 
-export { createLeague, addTeamToLeague, getLeagueTeams, getLeagues, updateLeague, deleteLeague };
+            //Check if league exists
+            const league = await prisma.league.findUnique({
+                where : {
+                    id: leagueId
+                }
+            });
+            if(!league){
+                return res.status(404).json({
+                    error: "League not found"
+                });
+            }
+            //Get all teams in the league
+            const leagueTeams = await prisma.leagueTeam.findMany({
+                where: {
+                    leagueId: leagueId
+                },
+                include: {
+                    team: true
+                }
+            });
+
+
+            //Get all finished matches for this league
+            const matches = await prisma.match.findMany({
+                where: {
+                    leagueId: leagueId,
+                    status: "FINISHED"
+                }
+            });
+
+            //Create intial standings
+            const standings = {};
+
+            for(const leagueTeam of leagueTeams) {
+                standings[leagueTeam.team.id] = {
+                    teamId: leagueTeam.team.id,
+                    teamName: leagueTeam.teamName,
+                    played: 0,
+                    won: 0,
+                    drawn: 0,
+                    lost: 0,
+                    goalsFor: 0,
+                    goalsAgainst: 0,
+                    goalDifference: 0,
+                    points: 0
+                };
+            }
+            //Process every finished match
+            for(const match of matches) {
+                const homeTeam = standings[match.homeTeamId];
+                const awayTeam = standings[match.awayTeamId]
+
+                homeTeam.played++;
+                awayTeam.played++;
+
+                homeTeam.goalsFor += match.homeScore;
+                homeTeam.goalsAgainst += match.awayScore;
+
+                awayTeam.goalsFor += match.awayScore;
+                awayTeam.goalsAgainst += match.homeScore;
+
+                //Home team wins
+                if(match.homeScore > match.awayScore) {
+                    homeTeam.won++;
+                    homeTeam.points +=3;
+
+                    awayTeam.lost++;
+                }
+                //Away team wins
+
+                else if(match.awayScore > match.homeScore){
+                    awayTeam.won++;
+                    awayTeam.points +=3;
+
+                    homeTeam.lost++;
+                }
+                //Draw
+                else {
+                    homeTeam.drawn++;
+                    awayTeam.drawn++;
+
+                    homeTeam.points++;
+                    awayTeam.points++;
+                }
+            }
+
+            //Calculate goal difference
+            for (const team of Object.values(standings)) {
+                team.goalDifference = 
+                    team.goalsFor - team.goalsAgainst;
+            }
+
+            //Convert object to array
+            const standingsTable = Object.values(standings);
+
+            //Sort standings
+            standingsTable.sort((a, b) =>{
+                if (b.points !== a.points) {
+                    return b.points - a.points;
+                }
+
+                if (b.goalDifference !== a.goalDifference) {
+                    return b.goalDifference - a.goalDifference;
+                }
+
+                return b.goalsFor - a.goalsFor;
+            });
+
+            return res.status(200).json({
+                status:"success",
+                leagueId:leagueId,
+                standings:standingsTable
+            });
+
+        }catch (error){
+            console.error(error);
+
+            return res.status(500).json({
+                error: "Internal server error",
+            });
+        }
+    };
+
+
+export { createLeague, addTeamToLeague, getLeagueTeams, getLeagues, updateLeague, deleteLeague, getLeagueStandings };
