@@ -427,5 +427,97 @@ const updateLeague = async (req, res) => {
         }
     };
 
+    const getLeagueResults = async (req, res) => {
+        try {
+            const { leagueId } = req.params;
 
-export { createLeague, addTeamToLeague, getLeagueTeams, getLeagues, updateLeague, deleteLeague, getLeagueStandings };
+            //Find the league
+            const league = await prisma.league.findUnique({
+                where: {
+                    id: leagueId,
+                },
+            });
+
+            if (!league){
+                return res.status(404).json({
+                    error: "League not found",
+                });
+            }
+
+            //Find the final 
+            const final = await prisma.match.findFirst({
+                where: {
+                    leagueId: leagueId,
+                    stage: "FINAL",
+                },
+                include: {
+                    homeTeam: true,
+                    awayTeam: true,
+                },
+            });
+
+            //Make sure the final exists
+            if(!final){
+                return res.status(400).json({
+                    error: "Final has not been generated yet",
+                });
+            }
+
+            //Make sure the final has been completed
+            if(final.status !== "FINISHED"){
+                return res.status(400).json({
+                    error: "Final has not yet been completed",
+                });
+            }
+
+            //Make sure the final was not a draw
+            if(final.homeScore === final.awayScore) {
+                return res.status(400).json({
+                    error: "Final can not be a draw",
+                });
+            }
+
+            //Determine the champion
+            let champion;
+
+            if(final.homeScore > final.awayScore) {
+                champion = final.homeTeam;
+            } else {
+                champion = final.awayTeam;
+            }
+
+            return res.status(200).json({
+                status: "success",
+
+                league: {
+                    id: league.id,
+                    name: league.name,
+                    season: league.season,
+                },
+
+                champion: {
+                    teamId: champion.id,
+                    teamName: champion.name,
+                },
+
+                final: {
+                    match: final.id,
+                    homeTeam:final.homeTeam.name,
+                    awayteam: final.awayTeam.name,
+                    homeScore: final.homeScore,
+                    awayScore: final.awayScore,
+                    matchDate: final.matchDate,
+                },
+            });
+
+        } catch (error) {
+            console.error(error);
+
+            return res.status(500).json({
+                error:"Internal server error",
+            });
+        } 
+    };
+
+
+export { createLeague, addTeamToLeague, getLeagueTeams, getLeagues, updateLeague, deleteLeague, getLeagueStandings, getLeagueResults };

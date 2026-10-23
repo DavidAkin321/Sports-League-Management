@@ -1,9 +1,16 @@
 import express from 'express'; 
-import {addPlayerToTeam, createTeam, deleteTeam, getTeamPlayers, removeFromTeam, updateTeam} from '../controllers/teamController.js';
+import {addPlayerToTeam, 
+        createTeam,
+        deleteTeam,
+        getTeamPlayers, 
+        removeFromTeam, 
+        updateTeam, 
+        getPlayerStats, 
+        recordPlayerMatchStatistic} from '../controllers/teamController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { coachOrAdmin } from '../middleware/roleMiddleware.js';
 import { validateRequest } from "../middleware/validateRequest.js";
-import { createTeamSchema, addPlayerToTeamSchema, updateTeamSchema } from "../validators/teamValidators.js";
+import { createTeamSchema, addPlayerToTeamSchema, updateTeamSchema, playerMatchStatisticSchema } from "../validators/teamValidators.js";
 
 const router = express.Router();
 
@@ -12,7 +19,6 @@ router.use(authMiddleware);
 router.post(
     "/:teamId/players", 
     validateRequest(addPlayerToTeamSchema),
-    authMiddleware,
     coachOrAdmin,
     addPlayerToTeam
 );
@@ -26,7 +32,6 @@ router.post(
 
 router.delete(
     "/players/:id",
-    authMiddleware,
     coachOrAdmin,
     removeFromTeam
 );
@@ -50,5 +55,16 @@ router.delete(
     deleteTeam
 );
 
+router.get(
+    "/players/:userId/stats",
+    getPlayerStats
+);
+
+router.post(
+    "/matches/:matchId/player-stats",
+    validateRequest(playerMatchStatisticSchema),
+    coachOrAdmin,
+    recordPlayerMatchStatistic
+);
 
 export default router;

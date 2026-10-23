@@ -34,4 +34,10 @@ const updateTeamSchema = z.object({
      logo: z.string().url("Logo must be a valid URL").optional()
 });
 
-export { createTeamSchema, addPlayerToTeamSchema, updateTeamSchema };
+const playerMatchStatisticSchema = z.object({
+    playerId: z.string().uuid(),
+    goals: z.number().int().min(0),
+    assists: z.number().int().min(0),
+});
+
+export { createTeamSchema, addPlayerToTeamSchema, updateTeamSchema, playerMatchStatisticSchema };

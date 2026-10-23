@@ -1,3 +1,4 @@
+import { MatchStatus } from "@prisma/client";
 import { prisma } from "../config/db.js";
 
 //Create Team 
@@ -49,6 +50,16 @@ const addPlayerToTeam = async (req, res) => {
         });
     }
 
+    //Check if logged in user owns the team
+    if(
+        team.createdBy !== req.user.id &&
+        req.user.role !== "ADMIN"
+    ) {
+        return res.status(403).json({
+            error: "You are not allowed to add players to this team",
+        });
+    }
+
     //Verify player exists
     const user = await prisma.user.findUnique({
         where:{ id:userId},
@@ -77,12 +88,14 @@ const addPlayerToTeam = async (req, res) => {
     }
 
     //Create Team Membership
-    const teamMember = await prisma.teamMember.create({
+   const result = await prisma.$transaction(async (tx) => {
+
+    const teamMember = await tx.teamMember.create({
         data: {
             userId: userId,
-            teamId,
+            teamId: teamId,
             playerPosition: position,
-            jerseyNumber,
+            jerseyNumber: jerseyNumber,
         },
         include: {
             user: {
@@ -95,11 +108,22 @@ const addPlayerToTeam = async (req, res) => {
         },
     });
 
+    const playerStats = await tx.playerStatistic.create({
+        data: {
+            playerId: userId,
+        },
+    });
+
+    return {
+        teamMember,
+        playerStats,
+    };
+});
     //Success
     return res.status(201).json({
         status: "success",
         message: "Player added succesfully",
-        data: teamMember,
+        data: result,
     });
 
 } catch (error) {
@@ -161,6 +185,68 @@ const getTeamPlayers = async (req, res) => {
         });
     }
     };
+
+
+    //Get player stats
+const getPlayerStats = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        //Check that the player exists
+        const player = await prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if(!player) {
+            return res.status(404).json({
+                error: "Player not found",
+            });
+        }
+
+        //Make sure the user is actually a player 
+        if (player.role !== "PLAYER") {
+            return res.status(400).json({
+                error: "User is not a player",
+            });
+        }
+
+        //Find the player's statistics
+        const stats = await prisma.playerStatistic.findUnique({
+            where: {
+                playerId: userId
+            },
+        });
+
+        if (!stats) {
+            return res.status(404).json({
+                error:"Player statistics not found",
+            });
+        }
+
+        return res.status(200).json({
+            status: "success",
+            data: {
+                player: {
+                    id: player.id,
+                    name: player.name
+                },
+                status: {
+                    goals: stats.goals,
+                    assists: stats.assists,
+                },
+            },
+        });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            error:"Internal server error",
+        });
+    }
+};
+
 
 const removeFromTeam = async (req, res) => {
     try {
@@ -258,8 +344,8 @@ const removeFromTeam = async (req, res) => {
             },
             data: {
                 ...(name !== undefined && { name }),
-                ...(city !== undefined && { name }),
-                ...(logo !== undefined && { name }),              
+                ...(city !== undefined && { city }),
+                ...(logo !== undefined && { logo }),              
             },
         });
 
@@ -323,11 +409,130 @@ const removeFromTeam = async (req, res) => {
         });
     }
  };
+
+const recordPlayerMatchStatistic = async (req, res) => {
+    try {
+        const { matchId } = req.params;
+        const { playerId, goals, assists } = req.body;
+
+        //Find the match 
+        const match = await prisma.match.findUnique({
+            where: {
+                id: matchId,
+            },
+        });
+
+        if (!match){
+            return res.status(404).json({
+                error: "Match not found",
+            });
+        }
+
+        //Match must be complete before recording statistics
+        if (match.status !== "FINISHED") {
+            return res.status(400).json({
+                error: "Player statistics can only be recorded for completed matches",
+            });
+        }
+
+        //Find the players team membership
+        const teamMember = await prisma.teamMember.findUnique({
+            where:{
+                userId: playerId,
+            },
+        });
+
+        if(!teamMember){
+            return res.status(404).json({
+                error: "Player is not assigned to a team",
+            });
+        }
+
+        //Check that players team participated in the match
+        const playerIsInMatch =
+        teamMember.teamId === match.homeTeamId ||
+        teamMember.teamId === match.awayTeamId;
+
+        if(!playerIsInMatch){
+            return res.status(404).json({
+                error: "Player did not participate in this match",
+            });
+        }
+
+        //Check if statistics have already been recorded
+        const existingStats = await prisma.playerMatchStatistic.findUnique({
+            where:{
+                matchId_playerId: {
+                    matchId: matchId,
+                    playerId: playerId,
+                },
+            },
+        });
+
+        if(existingStats) {
+            return res.status(409).json({
+                error: "Statistics have already been recorded for this player in this match"
+            });
+        }
+
+        //Create match statistics
+       const result = await prisma.$transaction(async (tx) => {
+
+    // Create the player's statistics for this match
+    const playerMatchStats =
+        await tx.playerMatchStatistic.create({
+            data: {
+                matchId: matchId,
+                playerId: playerId,
+                goals: goals,
+                assists: assists,
+            },
+        });
+
+    // Update the player's overall statistics
+    const playerStats =
+        await tx.playerStatistic.update({
+            where: {
+                playerId: playerId,
+            },
+            data: {
+                goals: {
+                    increment: goals,
+                },
+                assists: {
+                    increment: assists,
+                },
+            },
+        });
+
+    return {
+        playerMatchStats,
+        playerStats,
+    };
+});
+
+        return res.status(201).json({
+            status: "success",
+            messgae: "Player match statistics recorded succesfully",
+            data: result,
+        });
+
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+};
+
 export {
           createTeam, 
           addPlayerToTeam, 
           removeFromTeam, 
           getTeamPlayers, 
           updateTeam, 
-          deleteTeam 
+          deleteTeam,
+          getPlayerStats,
+          recordPlayerMatchStatistic
         };

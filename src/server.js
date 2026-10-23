@@ -24,7 +24,7 @@ app.use(express.urlencoded({extended:true}));
 app.use("/auth", authRoutes)
 app.use("/team", teamRoutes)
 app.use("/league", leagueRoutes)
-app.use("knockout", knockoutRoutes)
+app.use("/knockout", knockoutRoutes)
 
 
 const PORT = 5001;

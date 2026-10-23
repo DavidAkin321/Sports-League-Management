@@ -1,5 +1,5 @@
 import express from 'express' ;
-import { createLeague, addTeamToLeague, getLeagueTeams, getLeagues, updateLeague, deleteLeague, getLeagueStandings } from '../controllers/leagueController.js';
+import { createLeague, addTeamToLeague, getLeagueTeams, getLeagues, updateLeague, deleteLeague, getLeagueStandings, getLeagueResults } from '../controllers/leagueController.js';
 import { createLeagueSettings } from '../controllers/leagueSettingsController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { coachOrAdmin, organiserOrAdmin } from '../middleware/roleMiddleware.js';
@@ -74,5 +74,10 @@ router.get(
     "/:leagueId/standings",
     getLeagueStandings
 )
+
+router.get(
+    "/:leagueId/results",
+    getLeagueResults
+);
 
 export default router;
