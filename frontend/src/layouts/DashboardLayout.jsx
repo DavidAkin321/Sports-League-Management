@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, NavLink } from "react-router-dom";
 
 function DashboardLayout() {
     return (
@@ -7,13 +7,15 @@ function DashboardLayout() {
                 <h2>SportLeague</h2>
 
                 <nav>
-                    <p>MENU</p>
-                    <a href="#">Dashboard</a>
-                    <a href="#">My Teams</a>
-                    <a href="#">Fixtures</a>
-                    <a href="#">Results</a>
-                    <a href="#">Standings</a>
-                </nav>
+  <p>MENU</p>
+
+  <NavLink to="/">Dashboard</NavLink>
+  <NavLink to="/profile">My Profile</NavLink>
+  <a href="#">My Teams</a>
+  <a href="#">Fixtures</a>
+  <a href="#">Results</a>
+  <a href="#">Standings</a>
+</nav>
             </aside>
 
             <main className="main-content">

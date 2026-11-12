@@ -330,3 +330,356 @@ a {
     flex-direction: column;
   }
 }
+
+/* Recent results section */
+
+.recent-results {
+  margin-top: 35px;
+}
+
+.results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-card {
+  display: grid;
+  grid-template-columns: 140px 1fr 70px;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: 0.2s ease;
+}
+
+.result-card:hover {
+  border-color: var(--accent);
+}
+
+.result-date {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.result-match {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.result-match strong {
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.result-status {
+  padding: 6px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.result-status.win {
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.result-status.draw {
+  color: #facc15;
+  background: rgba(234, 179, 8, 0.12);
+}
+
+.result-status.loss {
+  color: #f87171;
+  background: rgba(239, 68, 68, 0.12);
+}
+
+@media (max-width: 700px) {
+  .result-card {
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+  }
+
+  .result-match {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+  }
+
+  .result-status {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+/* League standings */
+
+.league-standings {
+  margin-top: 35px;
+}
+
+.standings-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+
+.standings-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.standings-table th,
+.standings-table td {
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+.standings-table th {
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.standings-table td {
+  color: var(--text-secondary);
+}
+
+.standings-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.standings-table tbody tr:hover {
+  background: rgba(139, 92, 246, 0.06);
+}
+
+.standings-table .current-team {
+  background: rgba(139, 92, 246, 0.10);
+}
+
+.standings-table .current-team td {
+  color: var(--text-primary);
+}
+
+.standings-team-name {
+  font-weight: 600;
+}
+
+.standings-points {
+  color: #a78bfa !important;
+  font-weight: 700;
+}
+
+/* Player performance */
+
+.player-performance {
+  margin-top: 35px;
+}
+
+.performance-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.performance-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.performance-stat-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: rgba(139, 92, 246, 0.13);
+  color: #a78bfa;
+}
+
+.performance-stat-card p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.performance-stat-card h3 {
+  font-size: 23px;
+}
+
+.performance-chart-card {
+  padding: 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+
+.chart-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.chart-heading h3 {
+  font-size: 16px;
+}
+
+.chart-heading span {
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.performance-chart {
+  width: 100%;
+  height: 280px;
+}
+
+@media (max-width: 900px) {
+  .performance-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 550px) {
+  .performance-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .performance-chart-card {
+    padding: 15px;
+  }
+}
+
+.personal-statistics {
+  margin-top: 30px;
+}
+
+.personal-statistics > h2 {
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+.personal-statistics .player-performance {
+  margin-top: 20px;
+}
+
+
+/* Player profile */
+
+.player-profile {
+  max-width: 1000px;
+}
+
+.profile-heading {
+  margin-bottom: 25px;
+}
+
+.profile-heading h1 {
+  font-size: 26px;
+  margin-bottom: 8px;
+}
+
+.profile-heading p {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.profile-card,
+.profile-details {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 25px;
+  margin-bottom: 20px;
+}
+
+.profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.profile-avatar {
+  width: 85px;
+  height: 85px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  margin-bottom: 15px;
+}
+
+.profile-card h2 {
+  font-size: 21px;
+  margin-bottom: 6px;
+}
+
+.profile-position {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.profile-team {
+  background: rgba(139, 92, 246, 0.15);
+  color: #c4b5fd;
+  padding: 7px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+}
+
+.profile-details h2 {
+  font-size: 18px;
+  margin-bottom: 22px;
+}
+
+.profile-detail {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--accent);
+}
+
+.profile-detail:last-child {
+  border-bottom: none;
+}
+
+.profile-detail span {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.profile-detail p {
+  color: var(--text-primary);
+  font-size: 14px;
+}
