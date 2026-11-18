@@ -1,0 +1,212 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String @unique
+  password String
+  role UserRole
+  createdAt DateTime @default(now())
+
+  //Relations
+  memberships TeamMember[]
+  stats PlayerStatistic[]
+  matchStats PlayerMatchStatistic[]
+  teamsCreated Teams[] @relation("TeamCreator")
+  leaguesCreated League[] @relation("LeagueCreator")
+  matchesCreated Match[] @relation("MatchCreator")
+}
+
+model Teams {
+  id String @id @default(uuid())
+  name String
+  city String 
+  logo String?
+
+  createdBy String
+  createdAt DateTime @default(now())
+  //Relations
+  creator User @relation("TeamCreator",fields: [createdBy], references: [id])
+  members TeamMember[]
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+  //League relationship
+  leagueTeams LeagueTeam[]
+
+}
+
+model League {
+  id String @id @default(uuid())
+  name String 
+  season String
+
+  createdBy String
+  createdAt DateTime @default(now())
+
+  //Relations
+  creator User @relation("LeagueCreator",fields: [createdBy], references: [id])
+  leagueTeams LeagueTeam[]
+  matches Match[]
+  settings LeagueSettings?
+}
+
+model LeagueTeam {
+  id String @id @default(uuid())
+
+  leagueId String
+  teamId String
+
+  //Relations
+  league League @relation(fields: [leagueId], references: [id], onDelete: Cascade)
+  team Teams @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  //Prevent same team being added to the league twice
+  @@unique([leagueId, teamId])
+}
+
+model LeagueSettings {
+  id String @id @default(uuid())
+
+  leagueId String @unique
+
+  tournamentDate DateTime
+  startTime String
+  endTime String
+
+  matchDuration Int
+  breakDuration Int
+
+  surfaces Int
+
+  league League @relation( fields: [leagueId], references: [id], onDelete: Cascade)
+
+}
+
+model Match {
+  id String @id @default(uuid())
+  leagueId String
+  homeTeamId String 
+  awayTeamId String 
+ 
+  homeScore Int?
+  awayScore Int?
+
+  status MatchStatus
+  stage MatchStage
+  round Int
+  matchDate DateTime
+
+  surface Int
+
+  createdBy String
+  createdAt DateTime @default(now())
+
+  //Relations
+  league League @relation(fields: [leagueId], references: [id],onDelete: Cascade)
+  creator User @relation("MatchCreator",fields: [createdBy], references: [id])
+  homeTeam Teams @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam Teams @relation("AwayTeam",fields: [awayTeamId], references: [id])
+
+  playerStats PlayerMatchStatistic[]
+}
+
+model TeamMember {
+  id String @id @default(uuid())
+
+  userId String @unique
+  teamId String
+
+  playerPosition Position
+  jerseyNumber Int
+  captain Boolean @default(false)
+  viceCaptain Boolean @default(false)
+
+  joinedDate DateTime @default(now())
+
+  //Relations
+  user User @relation(fields: [userId], references: [id])
+  team Teams @relation(fields: [teamId], references: [id], onDelete: Cascade)
+}
+
+model PlayerStatistic {
+  id String @id @default(uuid())
+  playerId String @unique
+  goals Int @default(0)
+  assists Int @default(0)
+  createdAt DateTime @default(now())
+
+    player User @relation(fields: [playerId], references: [id])
+}
+
+model PlayerMatchStatistic {
+  id String @id @default(uuid())
+  matchId String
+  playerId String
+  goals Int @default(0)
+  assists Int @default(0)
+  createdAt DateTime @default(now())
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player User @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, playerId])
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+enum UserRole {
+  ADMIN
+  ORGANISER
+  COACH
+  PLAYER
+}
+
+enum Position {
+  GK
+
+  RB
+  RWB
+  
+  CB
+  LCB
+  RCB
+
+  LB
+  LWB
+
+  CDM
+  CM
+  CAM
+
+  RW
+  LW
+
+  CF
+  ST
+}
+
+enum MatchStage {
+  GROUP
+  QUATER_FINAL
+  SEMI_FINAL
+  FINAL
+}
+// USER(Coach) -> TEAMS ->
