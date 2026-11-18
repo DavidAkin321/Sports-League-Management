@@ -1,35 +1,61 @@
-import { Outlet, NavLink } from "react-router-dom";
+
+import { Outlet, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 function DashboardLayout() {
-    return (
-        <div className="dashboard-layout">
-            <aside className="sidebar">
-                <h2>SportLeague</h2>
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-                <nav>
-  <p>MENU</p>
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
-  <NavLink to="/">Dashboard</NavLink>
-  <NavLink to="/profile">My Profile</NavLink>
-  <a href="#">My Teams</a>
-  <a href="#">Fixtures</a>
-  <a href="#">Results</a>
-  <a href="#">Standings</a>
-</nav>
-            </aside>
+  return (
+    <div className="dashboard-layout">
+      <aside className="sidebar">
+        <h2>SportLeague</h2>
 
-            <main className="main-content">
-                <header className="dashboard-header">
-                    <h2>Dashboard</h2>
-                    <span>Welcome back</span>
-                </header>
+        <nav>
+          <p>MENU</p>
 
-                <section className="dashboard-content">
-                    <Outlet />
-                </section>
-            </main>
+          <NavLink to="/">Dashboard</NavLink>
+          <NavLink to="/profile">My Profile</NavLink>
+          <NavLink to="/teams">My Teams</NavLink>
+          <NavLink to="/fixtures">Fixtures</NavLink>
+          <NavLink to="/results">Results</NavLink>
+          <NavLink to="/standings">Standings</NavLink>
+        </nav>
+
+        <div className="sidebar-user">
+          <p>{user?.name}</p>
+          <span>{user?.role}</span>
         </div>
-    );
+
+        <button
+          className="logout-button"
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </aside>
+
+      <main className="main-content">
+        <header className="dashboard-header">
+          <h2>Dashboard</h2>
+          <span>Welcome back, {user?.name}!</span>
+        </header>
+
+        <section className="dashboard-content">
+          <Outlet />
+        </section>
+      </main>
+    </div>
+  );
 }
 
 export default DashboardLayout;

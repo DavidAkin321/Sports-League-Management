@@ -1,4 +1,3 @@
-
 import UpcomingFixtures from "../components/UpcomingFixtures";
 import RecentResults from "../components/RecentResults";
 import LeagueStandings from "../components/LeagueStandings";

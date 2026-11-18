@@ -1,4 +1,3 @@
-
 import FixtureCard from "./FixtureCard";
 
 function UpcomingFixtures() {

@@ -40,14 +40,6 @@ function PlayerProfile() {
         </div>
 
         <div className="profile-detail">
-          <Phone size={19} />
-          <div>
-            <span>Phone number</span>
-            <p>{player.phone}</p>
-          </div>
-        </div>
-
-        <div className="profile-detail">
           <Shield size={19} />
           <div>
             <span>Team</span>

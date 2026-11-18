@@ -1,4 +1,3 @@
-
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 
 function FixtureCard({ fixture }) {
@@ -18,8 +17,8 @@ function FixtureCard({ fixture }) {
           </span>
         </div>
 
-        <span className="fixture-status">
-          Upcoming
+        <span className={`fixture-status ${fixture.status ?? "upcoming"}`}>
+        {fixture.status === "completed" ? "Completed" : "Upcoming"}
         </span>
       </div>
 
