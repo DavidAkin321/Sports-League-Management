@@ -7,7 +7,8 @@ import {addPlayerToTeam,
         updateTeam, 
         getPlayerStats,
         getMyTeams, 
-        recordPlayerMatchStatistic} from '../controllers/teamController.js';
+        recordPlayerMatchStatistic,
+        getMyFixtures} from '../controllers/teamController.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 import { coachOrAdmin } from '../middleware/roleMiddleware.js';
 import { validateRequest } from "../middleware/validateRequest.js";
@@ -39,6 +40,11 @@ router.delete(
 
 router.get(
     "/my-teams", getMyTeams
+);
+
+router.get(
+    "/my-fixtures",
+    getMyFixtures
 );
 
 router.get(

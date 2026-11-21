@@ -558,8 +558,108 @@ const getMyTeams = async (req, res) => {
 };
 
 //get my fixtures left off here 
+const getMyFixtures = async (req, res) => {
+    try {
+        //Find the teams belonging to the Logged in user
+        const memberships = await prisma.teamMember.findMany({
+            where: {
+                userId: req.user.id,
+            },
+            select: {
+                teamId: true,
+            },
+        });
 
+        const teamIds = memberships.map(
+            (membership) => membership.teamId
+        );
 
+        //If the user has no teams, return an empty fixture list
+        if (teamIds.length === 0) {
+            return res.status(200).json({
+                status: "success",
+                data: {
+                    fixtures: [],
+                },
+            });
+        }
+
+        //Find upcoming scheduled matches involving those teams
+        const fixtures = await prisma.match.findMany({
+            where: {
+                AND: [
+                    {
+                        OR: [
+                            { homeTeamId: { in: teamIds } },
+                            { awayTeamId: { in: teamIds } },
+                        ],
+                    },
+                    {
+                        status: "SCHEDULED",
+                    },
+                    {
+                        matchDate: {
+                            gte: new Date(),
+                        },
+                    },
+                ],
+            },
+            include: {
+                homeTeam: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                awayTeam: {
+                    select: {
+                        id: true,
+                        name: true,
+                    },
+                },
+                league: {
+                    select: {
+                        id: true,
+                        name: true,
+                        season: true,
+                    },
+                },
+            },
+            orderBy: {
+                matchDate: "asc",
+            },
+        });
+
+        return res.status(200).json({
+            status: "success",
+            data: {
+                fixtures,
+            },
+        });
+    } catch (error) {
+        console.error(error);
+
+        return res.status(500).json({
+            error: "Internal server error",
+        });
+    }
+};
+
+//Recent results
+const getMyResults = async (req, res) => {
+    try {
+        //Find the teams belonging to the Logged-in user
+        const memberships = await prisma.teamMember.findMany({
+            where: {
+                userId: req.user.id,
+            },
+            select: {
+                teamId: true,
+            },
+        });
+        //CONTINUE HERE TOMMOROW 
+    }
+}
 
 export {
           createTeam, 
@@ -570,5 +670,6 @@ export {
           deleteTeam,
           getPlayerStats,
           recordPlayerMatchStatistic,
-          getMyTeams
+          getMyTeams,
+          getMyFixtures
         };
