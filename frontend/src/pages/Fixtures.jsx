@@ -1,48 +1,68 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FixtureCard from "../components/FixtureCard";
+import api from "../services/api";
 
 function Fixtures() {
   const [filter, setFilter] = useState("all");
+  const [fixtures, setFixtures] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // Temporary data until we connect the backend
-  const fixtures = [
-    {
-      id: 1,
-      homeTeam: "FC United",
-      awayTeam: "City Rovers",
-      date: "14 November 2026",
-      time: "15:00",
-      competition: "Premier Division",
-      location: "Home",
-      status: "upcoming"
-    },
-    {
-      id: 2,
-      homeTeam: "Greenfield FC",
-      awayTeam: "FC United",
-      date: "18 November 2026",
-      time: "18:30",
-      competition: "Premier Division",
-      location: "Away",
-      status: "upcoming"
-    },
-    {
-      id: 3,
-      homeTeam: "FC United",
-      awayTeam: "Athletic Club",
-      date: "8 November 2026",
-      time: "14:00",
-      competition: "Premier Division",
-      location: "Home",
-      status: "completed"
-    }
-  ];
+  useEffect(() => {
+    const fetchFixtures = async () => {
+      try {
+        const response = await api.get("/team/my-fixtures");
+
+        setFixtures(response.data.data.fixtures);
+      } catch (error) {
+        console.error("Failed to fetch fixtures:", error);
+
+        setError(
+          error.response?.data?.error ||
+          "Unable to load fixtures."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFixtures();
+  }, []);
 
   const filteredFixtures =
     filter === "all"
       ? fixtures
-      : fixtures.filter((fixture) => fixture.status === filter);
+      : filter === "upcoming"
+        ? fixtures.filter(
+            (fixture) => fixture.status === "SCHEDULED"
+          )
+        : [];
+
+  const formatFixture = (fixture) => ({
+    id: fixture.id,
+    homeTeam: fixture.homeTeam.name,
+    awayTeam: fixture.awayTeam.name,
+    date: new Date(fixture.matchDate).toLocaleDateString(
+      "en-IE",
+      {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }
+    ),
+    time: new Date(fixture.matchDate).toLocaleTimeString(
+      "en-IE",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    ),
+    competition: fixture.league.name,
+    location: "Home",
+    status: "upcoming",
+  });
 
   return (
     <div className="fixtures-page">
@@ -52,38 +72,40 @@ function Fixtures() {
       </div>
 
       <div className="fixture-filters">
-        <button
-          className={filter === "all" ? "active" : ""}
-          onClick={() => setFilter("all")}
-        >
-          All
-        </button>
-
-        <button
-          className={filter === "upcoming" ? "active" : ""}
-          onClick={() => setFilter("upcoming")}
-        >
-          Upcoming
-        </button>
-
-        <button
-          className={filter === "completed" ? "active" : ""}
-          onClick={() => setFilter("completed")}
-        >
-          Completed
-        </button>
-      </div>
-
-      <div className="fixtures-list">
-        {filteredFixtures.map((fixture) => (
-          <FixtureCard
-            key={fixture.id}
-            fixture={fixture}
-          />
+        {["all", "upcoming", "completed"].map((option) => (
+          <button
+            key={option}
+            className={filter === option ? "active" : ""}
+            onClick={() => setFilter(option)}
+          >
+            {option.charAt(0).toUpperCase() + option.slice(1)}
+          </button>
         ))}
       </div>
+
+      {loading ? (
+        <p>Loading fixtures...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : filteredFixtures.length === 0 ? (
+        <p>
+          {filter === "completed"
+            ? "No completed matches available yet."
+            : "No upcoming fixtures found."}
+        </p>
+      ) : (
+        <div className="fixtures-list">
+          {filteredFixtures.map((fixture) => (
+            <FixtureCard
+              key={fixture.id}
+              fixture={formatFixture(fixture)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 export default Fixtures;
+

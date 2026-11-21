@@ -1,60 +1,89 @@
+
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import FixtureCard from "./FixtureCard";
+import api from "../services/api";
 
 function UpcomingFixtures() {
+  const [fixtures, setFixtures] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const fixtures = [
-    {
-      id: 1,
-      homeTeam: "FC United",
-      awayTeam: "City Rovers",
-      date: "Saturday, 14 November",
-      time: "15:00",
-      competition: "Premier Division",
-      location: "Home"
-    },
-    {
-      id: 2,
-      homeTeam: "Greenfield FC",
-      awayTeam: "FC United",
-      date: "Wednesday, 18 November",
-      time: "18:30",
-      competition: "Premier Division",
-      location: "Away"
-    },
-    {
-      id: 3,
-      homeTeam: "FC United",
-      awayTeam: "Athletic Club",
-      date: "Saturday, 21 November",
-      time: "14:00",
-      competition: "Premier Division",
-      location: "Home"
-    }
-  ];
+  useEffect(() => {
+    const fetchFixtures = async () => {
+      try {
+        const response = await api.get("/team/my-fixtures");
+
+        setFixtures(response.data.data.fixtures);
+      } catch (error) {
+        console.error("Failed to fetch fixtures:", error);
+
+        setError(
+          error.response?.data?.error ||
+          "Unable to load upcoming fixtures."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFixtures();
+  }, []);
 
   return (
     <section className="upcoming-fixtures">
-
       <div className="section-heading">
         <div>
           <h2>Upcoming Fixtures</h2>
           <p>Your next scheduled matches</p>
         </div>
 
-        <button className="view-all-btn">
+        <Link to="/fixtures" className="view-all-btn">
           View all
-        </button>
+        </Link>
       </div>
 
-      <div className="fixtures-list">
-        {fixtures.map((fixture) => (
-          <FixtureCard
-            key={fixture.id}
-            fixture={fixture}
-          />
-        ))}
-      </div>
-
+      {loading ? (
+        <p>Loading upcoming fixtures...</p>
+      ) : error ? (
+        <p>{error}</p>
+      ) : fixtures.length === 0 ? (
+        <p>You have no upcoming fixtures scheduled.</p>
+      ) : (
+        <div className="fixtures-list">
+          {fixtures.slice(0, 3).map((fixture) => (
+            <FixtureCard
+              key={fixture.id}
+              fixture={{
+                id: fixture.id,
+                homeTeam: fixture.homeTeam.name,
+                awayTeam: fixture.awayTeam.name,
+                date: new Date(fixture.matchDate).toLocaleDateString(
+                  "en-IE",
+                  {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                  }
+                ),
+                time: new Date(fixture.matchDate).toLocaleTimeString(
+                  "en-IE",
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                ),
+                competition: fixture.league.name,
+                location: fixture.homeTeamId ===
+                  fixture.homeTeam.id
+                  ? "Home"
+                  : "Away",
+                status: "upcoming",
+              }}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
